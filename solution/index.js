@@ -49,7 +49,6 @@ module.exports = class {
   }
 
   forEach(fn, ctx) {
-    this.#values.forEach(i => i.getValue.bind(ctx))
     for (let i = 0; i < this.size; i++) {
       const getValue = this.#values[i]?.getValue
       if (typeof getValue === 'function') this.#values[i].getValue = getValue.bind(ctx)
