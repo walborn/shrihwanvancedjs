@@ -1,12 +1,12 @@
 module.exports = class {
   [Symbol.toStringTag] = '^_^'
-  #values
+  #values = []
 
-  constructor(values) {
-    this.#values = values.reduce((r, i) => ~r.indexOf(i) ? r : [ ...r, i ], [])
+  constructor(values = []) {
+    for (let value of values) this.add(value)
   }
 
-  *[Symbol.iterator] () {
+  *[Symbol.iterator]() {
     yield *this.values()
   }
 
@@ -18,41 +18,40 @@ module.exports = class {
     return this.#values
   }
 
-  values() {
-    return this.#values[Symbol.iterator]()
+  *values() {
+    for (let value of this.#values) yield value
   }
-  keys() {
-    return this.values()
+
+  *keys() {
+    yield *this.values()
   }
-  entries() {
-    return this.#values.map(i => [ i, i ])[Symbol.iterator]()
+
+  *entries() {
+    for (let value of this.#values) yield [ value, value]
   }
+
   clear() {
-    this.#values = []
+    this.#values.length = 0
   }
+
   has(value) {
-    return !!~this.#values.indexOf(value)
+    return this.#values.includes(value);
   }
 
   add(value) {
     if (!this.has(value)) this.#values.push(value)
     return this
   }
+
   delete(value) {
     if (!this.has(value)) return
     const i = this.#values.indexOf(value)
     this.#values = [ ...this.#values.slice(0, i), ...this.#values.slice(i + 1) ]
   }
 
-  valueOf() {
-    return this
-  }
-
-  forEach(fn, ctx) {
-    for (let i = 0; i < this.size; i++) {
-      const getValue = this.#values[i]?.getValue
-      if (typeof getValue === 'function') this.#values[i].getValue = getValue.bind(ctx)
-      fn(this.#values[i], i, this)
+  forEach(cb, ctx) {
+    for (let value of this.#values) {
+      cb.bind(ctx)(value)
     }
   }
 
